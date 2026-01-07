@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amusement Park Day Planner</title>
+    <style>
+        :root {
+            --sunset-coral: #FF6F61;
+            --golden-peach: #FFB680;
+            --sky-glow: #FFDFAE;
+            --twilight-purple: #6A4FBF;
+            --clean-sand: #FAF7F2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--clean-sand);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--sunset-coral) 0%, var(--golden-peach) 50%, var(--sky-glow) 100%);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            color: white;
+            font-size: 1.2rem;
+            font-style: italic;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            gap: 2rem;
+        }
+
+        .left-panel {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .right-panel {
+            flex: 2;
+        }
+
+        .section-title {
+            color: var(--twilight-purple);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .filter-item label {
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Park Selector */
+        .park-selector {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 2px solid var(--golden-peach);
+            border-radius: 8px;
+            background: white;
+            color: var(--twilight-purple);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .park-selector:hover {
+            border-color: var(--sunset-coral);
+        }
+
+        .park-selector:focus {
+            outline: none;
+            border-color: var(--sunset-coral);
+            box-shadow: 0 0 0 3px rgba(255, 111, 97, 0.2);
+        }
+
+        .park-info {
+            padding: 0.5rem;
+            background: var(--sky-glow);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        /* Rides List */
+        .rides-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .rides-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .ride-card {
+            background: linear-gradient(135deg, var(--sky-glow) 0%, #fff 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid var(--golden-peach);
+            cursor: grab;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .ride-card.closed {
+            opacity: 0.6;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+            border-color: #ccc;
+        }
+
+        .ride-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
+        }
+
+        .ride-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .ride-card.hidden {
+            display: none;
+        }
+
+        .ride-info {
+            flex: 1;
+        }
+
+        .ride-name {
+            font-weight: bold;
+            color: var(--twilight-purple);
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .ride-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .wait-time {
+            background: var(--sunset-coral);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        .wait-time.short {
+            background: #4CAF50;
+        }
+
+        .wait-time.medium {
+            background: var(--golden-peach);
+            color: #333;
+        }
+
+        .wait-time.long {
+            background: var(--sunset-coral);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.open {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-badge.closed {
+            background: #999;
+            color: white;
+        }
+
+        .ride-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .tag {
+            background: var(--sunset-coral);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            padding: 0.5rem;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .favorite-btn.active {
+            color: var(--sunset-coral);
+        }
+
+        .favorite-btn.inactive {
+            color: #ccc;
+        }
+
+        /* Schedule Blocks */
+        .schedule-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .schedule-block {
+            background: linear-gradient(135deg, var(--sky-glow) 0%, white 100%);
+            border: 3px dashed var(--golden-peach);
+            border-radius: 12px;
+            padding: 1rem;
+            min-height: 200px;
+        }
+
+        .schedule-block.drag-over {
+            background: linear-gradient(135deg, var(--golden-peach) 0%, var(--sky-glow) 100%);
+            border-color: var(--sunset-coral);
+            border-style: solid;
+        }
+
+        .schedule-block-title {
+            color: var(--twilight-purple);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+
+        .scheduled-rides {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .scheduled-ride {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--sunset-coral);
+            font-weight: 500;
+            color: var(--twilight-purple);
+        }
+
+        /* Spinner Section */
+        .spinner-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .spinner-wheel {
+            width: 200px;
+            height: 200px;
+            margin: 1.5rem auto;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--sunset-coral) 0deg 72deg,
+                var(--golden-peach) 72deg 144deg,
+                var(--sky-glow) 144deg 216deg,
+                var(--twilight-purple) 216deg 288deg,
+                var(--sunset-coral) 288deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 8px solid var(--twilight-purple);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .spinner-wheel.spinning {
+            transform: rotate(1800deg);
+        }
+
+        .spinner-center {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--twilight-purple);
+            font-size: 1rem;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, var(--sunset-coral) 0%, var(--golden-peach) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 111, 97, 0.4);
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 111, 97, 0.5);
+        }
+
+        .spin-btn:active {
+            transform: translateY(0);
+        }
+
+        .spin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .spin-result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--sky-glow) 0%, white 100%);
+            border-radius: 8px;
+            border: 2px solid var(--sunset-coral);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spin-result-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--twilight-purple);
+        }
+
+        /* Storage Controls */
+        .storage-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .storage-btn {
+            background: var(--twilight-purple);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .storage-btn:hover {
+            background: #5a3fa0;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .schedule-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎢 Amusement Park Day Planner</h1>
+        <p>Plan Less. Play More.</p>
+    </header>
+
+    <div class="container">
+        <!-- Left Panel: Filters & Rides -->
+        <div class="left-panel">
+            <!-- Park Selector -->
+            <div class="filters">
+                <h2 class="section-title">🎢 Select Park</h2>
+                <select id="park-selector" class="park-selector">
+                    <option value="">Loading parks...</option>
+                </select>
+                <div id="park-info" class="park-info" style="margin-top: 1rem; font-size: 0.9rem; color: #666;"></div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <h2 class="section-title">🔍 Filters</h2>
+                <div class="filter-group">
+                    <div class="filter-item">
+                        <input type="checkbox" id="filter-open" value="open" checked>
+                        <label for="filter-open">Open Rides</label>
+                    </div>
+                    <div class="filter-item">
+                        <input type="checkbox" id="filter-closed" value="closed">
+                        <label for="filter-closed">Closed Rides</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rides List -->
+            <div class="rides-section">
+                <h2 class="section-title">🎡 Attractions</h2>
+                <div class="rides-list" id="rides-list">
+                    <!-- Rides will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Schedule & Spinner -->
+        <div class="right-panel">
+            <!-- Schedule Blocks -->
+            <div class="schedule-container">
+                <h2 class="section-title">📅 Your Schedule</h2>
+                <div class="schedule-grid">
+                    <div class="schedule-block" data-time="morning">
+                        <div class="schedule-block-title">🌅 Morning</div>
+                        <div class="scheduled-rides" id="schedule-morning"></div>
+                    </div>
+                    <div class="schedule-block" data-time="midday">
+                        <div class="schedule-block-title">☀️ Midday</div>
+                        <div class="scheduled-rides" id="schedule-midday"></div>
+                    </div>
+                    <div class="schedule-block" data-time="afternoon">
+                        <div class="schedule-block-title">🌤️ Afternoon</div>
+                        <div class="scheduled-rides" id="schedule-afternoon"></div>
+                    </div>
+                    <div class="schedule-block" data-time="evening">
+                        <div class="schedule-block-title">🌙 Evening</div>
+                        <div class="scheduled-rides" id="schedule-evening"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spinner Section -->
+            <div class="spinner-section">
+                <h2 class="section-title">🎰 Ride Spinner</h2>
+                <p style="margin-bottom: 1rem; color: #666;">Can't decide? Spin for your next ride from favorites!</p>
+                
+                <div class="spinner-wheel" id="spinner-wheel">
+                    <div class="spinner-center" id="spinner-center">
+                        Click Spin!
+                    </div>
+                </div>
+
+                <button class="spin-btn" id="spin-btn">Spin for Next Ride</button>
+
+                <div class="spin-result" id="spin-result">
+                    <div class="spin-result-text" id="spin-result-text">
+                        Add favorites ⭐ to start spinning!
+                    </div>
+                </div>
+
+                <div class="storage-controls">
+                    <button class="storage-btn" id="save-btn">💾 Save Plan</button>
+                    <button class="storage-btn" id="load-btn">📂 Load Plan</button>
+                </div>
+
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: #666; text-align: center;">
+                    Powered by <a href="https://queue-times.com/en-US" target="_blank" style="color: var(--sunset-coral); text-decoration: none; font-weight: bold;">Queue-Times.com</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===========================
+        // DATA & STATE
+        // ===========================
+        const DISNEYLAND_API_URL = 'https://queue-times.com/parks/16/queue_times.json';
+        
+        let selectedPark = { id: 16, name: 'Disneyland Park', country: 'United States' };
+        let rides = [];
+        let favorites = new Set();
+        let schedule = {
+            morning: [],
+            midday: [],
+            afternoon: [],
+            evening: []
+        };
+
+        // ===========================
+        // INITIALIZATION
+        // ===========================
+        function init() {
+            setupParkSelector();
+            loadDisneylandData();
+            setupFilters();
+            setupDragAndDrop();
+            setupSpinner();
+            setupStorage();
+        }
+
+        function setupParkSelector() {
+            document.getElementById('park-selector').innerHTML = 
+                '<option value="16" selected>Disneyland Park (California)</option>';
+            document.getElementById('park-selector').disabled = true;
+            document.getElementById('park-info').innerHTML = 
+                '📍 Disneyland Park<br>🌍 Anaheim, California';
+        }
+
+        // ===========================
+        // API FUNCTIONS
+        // ===========================
+        async function loadDisneylandData() {
+            try {
+                // Show loading message
+                document.getElementById('rides-list').innerHTML = 
+                    '<div style="text-align: center; padding: 2rem; color: #666;">Loading Disneyland rides...</div>';
+
+                console.log('Fetching Disneyland data from:', DISNEYLAND_API_URL);
+                
+                // Try direct fetch first
+                let response;
+                try {
+                    response = await fetch(DISNEYLAND_API_URL, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                } catch (corsError) {
+                    console.log('Direct fetch failed, trying CORS proxy...');
+                    // Use CORS proxy as fallback
+                    response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(DISNEYLAND_API_URL)}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    });
+                }
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Disneyland data loaded:', data);
+                
+                // Flatten rides from all lands
+                rides = [];
+                let rideId = 1;
+                
+                if (data.lands && Array.isArray(data.lands)) {
+                    data.lands.forEach(land => {
+                        if (land.rides && Array.isArray(land.rides)) {
+                            land.rides.forEach(ride => {
+                                rides.push({
+                                    id: rideId++,
+                                    apiId: ride.id,
+                                    name: ride.name,
+                                    landName: land.name,
+                                    isOpen: ride.is_open,
+                                    waitTime: ride.wait_time,
+                                    lastUpdated: ride.last_updated
+                                });
+                            });
+                        }
+                    });
+                }
+
+                // Also add rides not in a land
+                if (data.rides && Array.isArray(data.rides) && data.rides.length > 0) {
+                    data.rides.forEach(ride => {
+                        rides.push({
+                            id: rideId++,
+                            apiId: ride.id,
+                            name: ride.name,
+                            landName: null,
+                            isOpen: ride.is_open,
+                            waitTime: ride.wait_time,
+                            lastUpdated: ride.last_updated
+                        });
+                    });
+                }
+
+                console.log('Total rides loaded:', rides.length);
+                
+                if (rides.length === 0) {
+                    throw new Error('No rides found in API response');
+                }
+                
+                renderRides();
+                applyFilters();
+                
+                // Update park info with last update time
+                if (rides.length > 0 && rides[0].lastUpdated) {
+                    const lastUpdate = new Date(rides[0].lastUpdated);
+                    document.getElementById('park-info').innerHTML += 
+                        `<br><small>Last updated: ${lastUpdate.toLocaleTimeString()}</small>`;
+                }
+            } catch (error) {
+                console.error('Error loading Disneyland data:', error);
+                console.error('Error details:', error.message);
+                document.getElementById('rides-list').innerHTML = 
+                    `<div style="text-align: center; padding: 2rem; color: #d32f2f;">
+                        <strong>⚠️ Error loading rides</strong><br>
+                        ${error.message}<br>
+                        <small style="display: block; margin-top: 1rem;">
+                        Check browser console (F12) for more details.
+                        </small>
+                    </div>`;
+            }
+        }
+
+        // ===========================
+        // RENDER RIDES
+        // ===========================
+        function renderRides() {
+            const ridesList = document.getElementById('rides-list');
+            
+            if (rides.length === 0) {
+                ridesList.innerHTML = 
+                    '<div style="text-align: center; padding: 2rem; color: #666;">Select a park to see attractions</div>';
+                return;
+            }
+
+            ridesList.innerHTML = '';
+
+            rides.forEach(ride => {
+                const rideCard = document.createElement('div');
+                rideCard.className = `ride-card ${!ride.isOpen ? 'closed' : ''}`;
+                rideCard.draggable = true;
+                rideCard.dataset.rideId = ride.id;
+                rideCard.dataset.isOpen = ride.isOpen;
+
+                let statusHTML = '';
+                if (ride.isOpen) {
+                    let waitClass = 'medium';
+                    let waitText = `${ride.waitTime} min`;
+                    
+                    if (ride.waitTime === 0) {
+                        waitText = 'Walk-on';
+                        waitClass = 'short';
+                    } else if (ride.waitTime < 20) {
+                        waitClass = 'short';
+                    } else if (ride.waitTime < 45) {
+                        waitClass = 'medium';
+                    } else {
+                        waitClass = 'long';
+                    }
+                    
+                    statusHTML = `
+                        <div class="ride-status">
+                            <span class="status-badge open">Open</span>
+                            <span class="wait-time ${waitClass}">⏱️ ${waitText}</span>
+                        </div>
+                    `;
+                } else {
+                    statusHTML = `
+                        <div class="ride-status">
+                            <span class="status-badge closed">Closed</span>
+                        </div>
+                    `;
+                }
+
+                const landHTML = ride.landName ? `<div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">📍 ${ride.landName}</div>` : '';
+
+                rideCard.innerHTML = `
+                    <div class="ride-info">
+                        <div class="ride-name">${ride.name}</div>
+                        ${landHTML}
+                        ${statusHTML}
+                    </div>
+                    <button class="favorite-btn ${favorites.has(ride.id) ? 'active' : 'inactive'}" 
+                            data-ride-id="${ride.id}">
+                        ${favorites.has(ride.id) ? '⭐' : '☆'}
+                    </button>
+                `;
+
+                ridesList.appendChild(rideCard);
+            });
+
+            // Setup favorite buttons
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(parseInt(btn.dataset.rideId));
+                });
+            });
+        }
+
+        // ===========================
+        // FILTERS
+        // ===========================
+        function setupFilters() {
+            const filterCheckboxes = document.querySelectorAll('.filter-item input[type="checkbox"]');
+            
+            filterCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', applyFilters);
+            });
+        }
+
+        function applyFilters() {
+            const showOpen = document.getElementById('filter-open').checked;
+            const showClosed = document.getElementById('filter-closed').checked;
+
+            document.querySelectorAll('.ride-card').forEach(card => {
+                const isOpen = card.dataset.isOpen === 'true';
+                
+                const shouldShow = (isOpen && showOpen) || (!isOpen && showClosed);
+                
+                if (shouldShow) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // ===========================
+        // FAVORITES
+        // ===========================
+        function toggleFavorite(rideId) {
+            if (favorites.has(rideId)) {
+                favorites.delete(rideId);
+            } else {
+                favorites.add(rideId);
+            }
+            renderRides();
+            applyFilters();
+        }
+
+        // ===========================
+        // DRAG AND DROP
+        // ===========================
+        function setupDragAndDrop() {
+            const ridesList = document.getElementById('rides-list');
+
+            // Drag start from rides list
+            ridesList.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('ride-card')) {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'copy';
+                    e.dataTransfer.setData('text/plain', e.target.dataset.rideId);
+                }
+            });
+
+            ridesList.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('ride-card')) {
+                    e.target.classList.remove('dragging');
+                }
+            });
+
+            // Drop zones
+            const scheduleBlocks = document.querySelectorAll('.schedule-block');
+
+            scheduleBlocks.forEach(block => {
+                block.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'copy';
+                    block.classList.add('drag-over');
+                });
+
+                block.addEventListener('dragleave', (e) => {
+                    if (e.target === block) {
+                        block.classList.remove('drag-over');
+                    }
+                });
+
+                block.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    block.classList.remove('drag-over');
+                    
+                    const rideId = parseInt(e.dataTransfer.getData('text/plain'));
+                    const timeSlot = block.dataset.time;
+                    
+                    addRideToSchedule(rideId, timeSlot);
+                });
+            });
+        }
+
+        function addRideToSchedule(rideId, timeSlot) {
+            const ride = rides.find(r => r.id === rideId);
+            if (!ride) return;
+
+            // Add to schedule (allow duplicates)
+            schedule[timeSlot].push(ride);
+            renderSchedule(timeSlot);
+        }
+
+        function renderSchedule(timeSlot) {
+            const container = document.getElementById(`schedule-${timeSlot}`);
+            container.innerHTML = '';
+
+            schedule[timeSlot].forEach((ride, index) => {
+                const rideEl = document.createElement('div');
+                rideEl.className = 'scheduled-ride';
+                
+                let waitInfo = '';
+                if (ride.isOpen && ride.waitTime !== undefined) {
+                    waitInfo = ` (⏱️ ${ride.waitTime} min)`;
+                } else if (!ride.isOpen) {
+                    waitInfo = ' (Closed)';
+                }
+                
+                rideEl.innerHTML = `${ride.name}${waitInfo}`;
+                container.appendChild(rideEl);
+            });
+        }
+
+        // ===========================
+        // SPINNER
+        // ===========================
+        function setupSpinner() {
+            const spinBtn = document.getElementById('spin-btn');
+            const wheel = document.getElementById('spinner-wheel');
+            
+            spinBtn.addEventListener('click', () => {
+                if (favorites.size === 0) {
+                    document.getElementById('spin-result-text').textContent = 
+                        'Please add some favorites ⭐ first!';
+                    return;
+                }
+
+                spinBtn.disabled = true;
+                wheel.classList.add('spinning');
+                
+                // Perform spin
+                setTimeout(() => {
+                    wheel.classList.remove('spinning');
+                    
+                    // Pick random favorite
+                    const favoritesArray = Array.from(favorites);
+                    const randomId = favoritesArray[Math.floor(Math.random() * favoritesArray.length)];
+                    const selectedRide = rides.find(r => r.id === randomId);
+                    
+                    document.getElementById('spin-result-text').innerHTML = 
+                        `🎉 <strong>${selectedRide.name}</strong> 🎉`;
+                    
+                    document.getElementById('spinner-center').textContent = selectedRide.name;
+                    
+                    spinBtn.disabled = false;
+                }, 3000);
+            });
+        }
+
+        // ===========================
+        // LOCALSTORAGE
+        // ===========================
+        function setupStorage() {
+            document.getElementById('save-btn').addEventListener('click', savePlan);
+            document.getElementById('load-btn').addEventListener('click', loadPlan);
+        }
+
+        function savePlan() {
+            const planData = {
+                parkId: selectedPark.id,
+                favorites: Array.from(favorites),
+                schedule: {
+                    morning: schedule.morning.map(r => r.id),
+                    midday: schedule.midday.map(r => r.id),
+                    afternoon: schedule.afternoon.map(r => r.id),
+                    evening: schedule.evening.map(r => r.id)
+                }
+            };
+
+            localStorage.setItem('parkPlan', JSON.stringify(planData));
+            alert('✅ Plan saved successfully!');
+        }
+
+        function loadPlan() {
+            const saved = localStorage.getItem('parkPlan');
+            if (!saved) {
+                alert('⚠️ No saved plan found.');
+                return;
+            }
+
+            const planData = JSON.parse(saved);
+            
+            // Restore favorites
+            favorites = new Set(planData.favorites);
+            
+            // Restore schedule
+            schedule = {
+                morning: planData.schedule.morning.map(id => rides.find(r => r.id === id)).filter(Boolean),
+                midday: planData.schedule.midday.map(id => rides.find(r => r.id === id)).filter(Boolean),
+                afternoon: planData.schedule.afternoon.map(id => rides.find(r => r.id === id)).filter(Boolean),
+                evening: planData.schedule.evening.map(id => rides.find(r => r.id === id)).filter(Boolean)
+            };
+
+            // Re-render everything
+            renderRides();
+            applyFilters();
+            renderSchedule('morning');
+            renderSchedule('midday');
+            renderSchedule('afternoon');
+            renderSchedule('evening');
+
+            alert('✅ Plan loaded successfully!');
+        }
+
+        // ===========================
+        // START APP
+        // ===========================
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "amusement-park-day-planner",
+  "version": "1.0.0",
+  "description": "A single-page web application for planning your theme park day with live wait times",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YOUR_USERNAME/amusement_park_day_planner.git"
+  },
+  "keywords": [
+    "theme-park",
+    "planner",
+    "disneyland",
+    "wait-times",
+    "azure",
+    "static-web-app"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/amusement_park_day_planner/issues"
+  },
+  "homepage": "https://github.com/YOUR_USERNAME/amusement_park_day_planner#readme"
+}

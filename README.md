@@ -2,6 +2,7 @@
 
 A single-page web application that helps theme park guests plan their day with drag-and-drop scheduling, live wait times, and a fun spinner wheel for decision-making.
 
+
 ## 🎢 Features
 
 - **Live Wait Times**: Real-time ride wait times from Queue-Times.com API

@@ -6,11 +6,26 @@
     <title>Amusement Park Day Planner</title>
     <style>
         :root {
-            --sunset-coral: #FF6F61;
-            --golden-peach: #FFB680;
-            --sky-glow: #FFDFAE;
-            --twilight-purple: #6A4FBF;
-            --clean-sand: #FAF7F2;
+            /* Disneyland-Inspired Palette */
+            --magic-blue: #0051BA;
+            --castle-blue: #4A90E2;
+            --fantasy-purple: #8B5CF6;
+            --pixie-pink: #EC4899;
+            --mickey-red: #E31E24;
+            --golden-magic: #FFB82E;
+            --starlight-yellow: #FDE047;
+            --enchanted-teal: #14B8A6;
+            
+            /* Neutrals */
+            --fairy-cream: #FFF9F0;
+            --castle-white: #FFFFFF;
+            --midnight-navy: #1E293B;
+            --royal-grey: #64748B;
+            
+            /* Functional */
+            --border-magic: #E0E7FF;
+            --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-enchanted: 0 8px 24px rgba(139, 92, 246, 0.15);
         }
 
         * {
@@ -21,29 +36,44 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--clean-sand);
-            color: #333;
+            background: linear-gradient(to bottom, #E0E7FF, var(--fairy-cream));
+            background-attachment: fixed;
+            color: var(--midnight-navy);
             overflow-x: hidden;
         }
 
         header {
-            background: linear-gradient(135deg, var(--sunset-coral) 0%, var(--golden-peach) 50%, var(--sky-glow) 100%);
-            padding: 2rem;
+            background: #5287F1;
+            padding: 0;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-enchanted);
+            border-bottom: 4px solid var(--golden-magic);
+            height: 300px;
+            overflow: hidden;
+        }
+
+        header .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        header .logo {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
         }
 
         header h1 {
-            color: white;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            display: none;
         }
 
         header p {
-            color: white;
-            font-size: 1.2rem;
-            font-style: italic;
+            display: none;
         }
 
         .container {
@@ -64,7 +94,7 @@
         }
 
         .section-title {
-            color: var(--twilight-purple);
+            color: var(--magic-blue);
             font-size: 1.5rem;
             margin-bottom: 1rem;
             font-weight: bold;
@@ -72,11 +102,12 @@
 
         /* Filters */
         .filters {
-            background: white;
+            background: var(--castle-white);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-soft);
             margin-bottom: 1.5rem;
+            border: 2px solid var(--border-magic);
         }
 
         .filter-group {
@@ -108,38 +139,42 @@
             width: 100%;
             padding: 0.75rem;
             font-size: 1rem;
-            border: 2px solid var(--golden-peach);
+            border: 2px solid var(--fantasy-purple);
             border-radius: 8px;
-            background: white;
-            color: var(--twilight-purple);
+            background: var(--castle-white);
+            color: var(--midnight-navy);
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s ease;
         }
 
         .park-selector:hover {
-            border-color: var(--sunset-coral);
+            border-color: var(--pixie-pink);
+            box-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
         }
 
         .park-selector:focus {
             outline: none;
-            border-color: var(--sunset-coral);
-            box-shadow: 0 0 0 3px rgba(255, 111, 97, 0.2);
+            border-color: var(--magic-blue);
+            box-shadow: 0 0 0 3px rgba(0, 81, 186, 0.2);
         }
 
         .park-info {
             padding: 0.5rem;
-            background: var(--sky-glow);
+            background: var(--fairy-cream);
             border-radius: 6px;
             font-size: 0.85rem;
+            color: var(--royal-grey);
+            border: 1px solid var(--border-magic);
         }
 
         /* Rides List */
         .rides-section {
-            background: white;
+            background: var(--castle-white);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-soft);
+            border: 2px solid var(--border-magic);
         }
 
         .rides-list {
@@ -151,10 +186,10 @@
         }
 
         .ride-card {
-            background: linear-gradient(135deg, var(--sky-glow) 0%, #fff 100%);
+            background: linear-gradient(135deg, var(--castle-white), #F8F9FF);
             padding: 1rem;
             border-radius: 8px;
-            border: 2px solid var(--golden-peach);
+            border: 2px solid var(--fantasy-purple);
             cursor: grab;
             transition: all 0.3s ease;
             display: flex;
@@ -170,8 +205,9 @@
         }
 
         .ride-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 111, 97, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+            border-color: var(--pixie-pink);
         }
 
         .ride-card.dragging {
@@ -189,7 +225,7 @@
 
         .ride-name {
             font-weight: bold;
-            color: var(--twilight-purple);
+            color: var(--magic-blue);
             font-size: 1.1rem;
             margin-bottom: 0.25rem;
         }
@@ -203,25 +239,27 @@
         }
 
         .wait-time {
-            background: var(--sunset-coral);
+            background: var(--mickey-red);
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
             font-weight: bold;
             font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .wait-time.short {
-            background: #4CAF50;
+            background: var(--enchanted-teal);
+            color: white;
         }
 
         .wait-time.medium {
-            background: var(--golden-peach);
-            color: #333;
+            background: var(--golden-magic);
+            color: var(--midnight-navy);
         }
 
         .wait-time.long {
-            background: var(--sunset-coral);
+            background: var(--mickey-red);
         }
 
         .status-badge {
@@ -232,7 +270,7 @@
         }
 
         .status-badge.open {
-            background: #4CAF50;
+            background: var(--enchanted-teal);
             color: white;
         }
 
@@ -249,7 +287,7 @@
         }
 
         .tag {
-            background: var(--sunset-coral);
+            background: var(--fantasy-purple);
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
@@ -271,7 +309,8 @@
         }
 
         .favorite-btn.active {
-            color: var(--sunset-coral);
+            color: var(--pixie-pink);
+            filter: drop-shadow(0 2px 4px rgba(236, 72, 153, 0.4));
         }
 
         .favorite-btn.inactive {
@@ -280,11 +319,12 @@
 
         /* Schedule Blocks */
         .schedule-container {
-            background: white;
+            background: var(--castle-white);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-soft);
             margin-bottom: 1.5rem;
+            border: 2px solid var(--border-magic);
         }
 
         .schedule-grid {
@@ -295,21 +335,23 @@
         }
 
         .schedule-block {
-            background: linear-gradient(135deg, var(--sky-glow) 0%, white 100%);
-            border: 3px dashed var(--golden-peach);
+            background: linear-gradient(135deg, #F8F9FF, var(--fairy-cream));
+            border: 3px dashed var(--fantasy-purple);
             border-radius: 12px;
             padding: 1rem;
             min-height: 200px;
         }
 
         .schedule-block.drag-over {
-            background: linear-gradient(135deg, var(--golden-peach) 0%, var(--sky-glow) 100%);
-            border-color: var(--sunset-coral);
+            background: var(--castle-white);
+            border-color: var(--pixie-pink);
             border-style: solid;
+            box-shadow: var(--shadow-enchanted);
+            transform: scale(1.02);
         }
 
         .schedule-block-title {
-            color: var(--twilight-purple);
+            color: var(--magic-blue);
             font-weight: bold;
             font-size: 1.2rem;
             margin-bottom: 0.75rem;
@@ -323,21 +365,22 @@
         }
 
         .scheduled-ride {
-            background: white;
+            background: var(--castle-white);
             padding: 0.75rem;
             border-radius: 6px;
-            border-left: 4px solid var(--sunset-coral);
+            border-left: 4px solid var(--golden-magic);
             font-weight: 500;
-            color: var(--twilight-purple);
+            color: var(--midnight-navy);
             position: relative;
             padding-right: 2.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .scheduled-ride-delete {
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
-            background: #d32f2f;
+            background: var(--mickey-red);
             color: white;
             border: none;
             width: 20px;
@@ -355,17 +398,19 @@
         }
 
         .scheduled-ride-delete:hover {
-            background: #b71c1c;
-            transform: scale(1.1);
+            background: #B71C1C;
+            transform: scale(1.15);
+            box-shadow: 0 2px 8px rgba(227, 30, 36, 0.4);
         }
 
         /* Spinner Section */
         .spinner-section {
-            background: white;
+            background: var(--castle-white);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-soft);
             text-align: center;
+            border: 2px solid var(--border-magic);
         }
 
         .spinner-wheel {
@@ -374,18 +419,17 @@
             margin: 1.5rem auto;
             border-radius: 50%;
             background: conic-gradient(
-                var(--sunset-coral) 0deg 72deg,
-                var(--golden-peach) 72deg 144deg,
-                var(--sky-glow) 144deg 216deg,
-                var(--twilight-purple) 216deg 288deg,
-                var(--sunset-coral) 288deg 360deg
+                var(--golden-magic) 0deg 90deg,
+                var(--pixie-pink) 90deg 180deg,
+                var(--castle-blue) 180deg 270deg,
+                var(--fantasy-purple) 270deg 360deg
             );
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            border: 8px solid var(--twilight-purple);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 8px solid var(--magic-blue);
+            box-shadow: var(--shadow-enchanted);
             transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
         }
 
@@ -396,21 +440,21 @@
         .spinner-center {
             width: 120px;
             height: 120px;
-            background: white;
+            background: var(--castle-white);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: var(--twilight-purple);
+            color: var(--magic-blue);
             font-size: 1rem;
             padding: 1rem;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .spin-btn {
-            background: linear-gradient(135deg, var(--sunset-coral) 0%, var(--golden-peach) 100%);
+            background: linear-gradient(135deg, var(--fantasy-purple), var(--pixie-pink));
             color: white;
             border: none;
             padding: 1rem 2rem;
@@ -419,12 +463,13 @@
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(255, 111, 97, 0.4);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
         }
 
         .spin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(255, 111, 97, 0.5);
+            background: linear-gradient(135deg, var(--magic-blue), var(--fantasy-purple));
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
         }
 
         .spin-btn:active {
@@ -440,9 +485,9 @@
         .spin-result {
             margin-top: 1.5rem;
             padding: 1rem;
-            background: linear-gradient(135deg, var(--sky-glow) 0%, white 100%);
+            background: linear-gradient(135deg, #F8F9FF, var(--fairy-cream));
             border-radius: 8px;
-            border: 2px solid var(--sunset-coral);
+            border: 2px solid var(--fantasy-purple);
             min-height: 60px;
             display: flex;
             align-items: center;
@@ -452,7 +497,7 @@
         .spin-result-text {
             font-size: 1.3rem;
             font-weight: bold;
-            color: var(--twilight-purple);
+            color: var(--fantasy-purple);
         }
 
         /* Storage Controls */
@@ -464,7 +509,7 @@
         }
 
         .storage-btn {
-            background: var(--twilight-purple);
+            background: var(--castle-blue);
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
@@ -473,11 +518,13 @@
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
         }
 
         .storage-btn:hover {
-            background: #5a3fa0;
+            background: var(--magic-blue);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 81, 186, 0.4);
         }
 
         /* Responsive Design */
@@ -486,8 +533,8 @@
                 flex-direction: column;
             }
 
-            header h1 {
-                font-size: 2rem;
+            header .logo {
+                width: 100%;
             }
 
             .schedule-grid {
@@ -498,8 +545,10 @@
 </head>
 <body>
     <header>
-        <h1>🎢 Amusement Park Day Planner</h1>
-        <p>Plan Less. Play More.</p>
+        <div class="logo-container">
+            <img src="images/amusement-park-day-planner_logo.png" alt="Amusement Park Day Planner Logo" class="logo">
+            <h1>Amusement Park Day Planner</h1>
+        </div>
     </header>
 
     <div class="container">
@@ -588,7 +637,7 @@
                 </div>
 
                 <div style="margin-top: 1rem; font-size: 0.85rem; color: #666; text-align: center;">
-                    Powered by <a href="https://queue-times.com/en-US" target="_blank" style="color: var(--sunset-coral); text-decoration: none; font-weight: bold;">Queue-Times.com</a>
+                    Powered by <a href="https://queue-times.com/en-US" target="_blank" style="color: var(--pixie-pink); text-decoration: none; font-weight: bold;">Queue-Times.com</a>
                 </div>
             </div>
         </div>
@@ -814,7 +863,7 @@
             Object.keys(ridesByLand).forEach(landName => {
                 // Create land header
                 const landHeader = document.createElement('div');
-                landHeader.style.cssText = 'font-weight: bold; color: var(--twilight-purple); padding: 0.75rem 0.5rem; margin-top: 1rem; border-bottom: 2px solid var(--golden-peach);';
+                landHeader.style.cssText = 'font-weight: bold; color: var(--magic-blue); padding: 0.75rem 0.5rem; margin-top: 1rem; border-bottom: 3px solid var(--fantasy-purple);';
                 landHeader.textContent = landName;
                 ridesList.appendChild(landHeader);
                 

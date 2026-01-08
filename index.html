@@ -889,26 +889,36 @@
             rideCard.dataset.rideId = ride.id;
             rideCard.dataset.isOpen = ride.isOpen;
 
+            // Check if all wait times in the park are 0
+            const allWaitTimesZero = rides.every(r => r.waitTime === 0 || r.waitTime === null || r.waitTime === undefined);
+
             let statusHTML = '';
             if (ride.isOpen) {
-                let waitClass = 'medium';
-                let waitText = `${ride.waitTime} min`;
+                let waitTimeHTML = '';
                 
-                if (ride.waitTime === 0) {
-                    waitText = 'Walk-on';
-                    waitClass = 'short';
-                } else if (ride.waitTime < 20) {
-                    waitClass = 'short';
-                } else if (ride.waitTime < 45) {
-                    waitClass = 'medium';
-                } else {
-                    waitClass = 'long';
+                // Only show wait time if it's provided and not all wait times are 0
+                if (ride.waitTime !== null && ride.waitTime !== undefined && !allWaitTimesZero) {
+                    let waitClass = 'medium';
+                    let waitText = `${ride.waitTime} min`;
+                    
+                    if (ride.waitTime === 0) {
+                        waitText = 'Walk-on';
+                        waitClass = 'short';
+                    } else if (ride.waitTime < 20) {
+                        waitClass = 'short';
+                    } else if (ride.waitTime < 45) {
+                        waitClass = 'medium';
+                    } else {
+                        waitClass = 'long';
+                    }
+                    
+                    waitTimeHTML = `<span class="wait-time ${waitClass}">⏱️ ${waitText}</span>`;
                 }
                 
                 statusHTML = `
                     <div class="ride-status">
                         <span class="status-badge open">Open</span>
-                        <span class="wait-time ${waitClass}">⏱️ ${waitText}</span>
+                        ${waitTimeHTML}
                     </div>
                 `;
             } else {
@@ -1036,12 +1046,16 @@
             const container = document.getElementById(`schedule-${timeSlot}`);
             container.innerHTML = '';
 
+            // Check if all wait times are 0
+            const allWaitTimesZero = rides.every(r => r.waitTime === 0 || r.waitTime === null || r.waitTime === undefined);
+
             schedule[timeSlot].forEach((ride, index) => {
                 const rideEl = document.createElement('div');
                 rideEl.className = 'scheduled-ride';
                 
                 let waitInfo = '';
-                if (ride.isOpen && ride.waitTime !== undefined) {
+                // Only show wait time if provided and not all wait times are 0
+                if (ride.isOpen && ride.waitTime !== undefined && ride.waitTime !== null && !allWaitTimesZero) {
                     waitInfo = ` (⏱️ ${ride.waitTime} min)`;
                 } else if (!ride.isOpen) {
                     waitInfo = ' (Closed)';

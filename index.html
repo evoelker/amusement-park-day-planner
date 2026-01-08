@@ -570,10 +570,12 @@
         // ===========================
         // DATA & STATE
         // ===========================
-        const DISNEYLAND_API_URL = 'https://queue-times.com/parks/16/queue_times.json';
+        const API_BASE = 'https://queue-times.com';
         
-        let selectedPark = { id: 16, name: 'Disneyland Park', country: 'United States' };
+        let parks = [];
+        let selectedPark = null;
         let rides = [];
+        let ridesByLand = {};
         let favorites = new Set();
         let schedule = {
             morning: [],
@@ -586,71 +588,126 @@
         // INITIALIZATION
         // ===========================
         function init() {
-            setupParkSelector();
-            loadDisneylandData();
+            loadParks();
             setupFilters();
             setupDragAndDrop();
             setupSpinner();
             setupStorage();
         }
 
-        function setupParkSelector() {
-            document.getElementById('park-selector').innerHTML = 
-                '<option value="16" selected>Disneyland Park (California)</option>';
-            document.getElementById('park-selector').disabled = true;
-            document.getElementById('park-info').innerHTML = 
-                '📍 Disneyland Park<br>🌍 Anaheim, California';
-        }
-
         // ===========================
         // API FUNCTIONS
         // ===========================
-        async function loadDisneylandData() {
+        async function loadParks() {
             try {
-                // Show loading message
-                document.getElementById('rides-list').innerHTML = 
-                    '<div style="text-align: center; padding: 2rem; color: #666;">Loading Disneyland rides...</div>';
-
-                console.log('Fetching Disneyland data from:', DISNEYLAND_API_URL);
+                console.log('Fetching parks...');
                 
-                // Try direct fetch first
                 let response;
                 try {
-                    response = await fetch(DISNEYLAND_API_URL, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                        }
-                    });
+                    response = await fetch(`${API_BASE}/parks.json`);
                 } catch (corsError) {
                     console.log('Direct fetch failed, trying CORS proxy...');
-                    // Use CORS proxy as fallback
-                    response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(DISNEYLAND_API_URL)}`, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json',
-                        }
-                    });
+                    response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(API_BASE + '/parks.json')}`);
                 }
-                
-                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Disneyland data loaded:', data);
+                console.log('Parks data loaded:', data);
                 
-                // Flatten rides from all lands
+                // Flatten park groups
+                parks = [];
+                data.forEach(group => {
+                    if (group.parks && Array.isArray(group.parks)) {
+                        group.parks.forEach(park => {
+                            parks.push({
+                                ...park,
+                                groupName: group.name
+                            });
+                        });
+                    }
+                });
+                
+                // Sort alphabetically
+                parks.sort((a, b) => a.name.localeCompare(b.name));
+                
+                console.log('Total parks loaded:', parks.length);
+                renderParkSelector();
+            } catch (error) {
+                console.error('Error loading parks:', error);
+                document.getElementById('park-selector').innerHTML = 
+                    '<option value="">Error loading parks</option>';
+                document.getElementById('park-info').innerHTML = 
+                    `<div style="color: #d32f2f;">⚠️ Unable to load parks. Please refresh the page.</div>`;
+            }
+        }
+
+        function renderParkSelector() {
+            const selector = document.getElementById('park-selector');
+            selector.innerHTML = '<option value="">-- Select a Park --</option>';
+            selector.disabled = false;
+            
+            parks.forEach(park => {
+                const option = document.createElement('option');
+                option.value = park.id;
+                option.textContent = `${park.name} (${park.country})`;
+                selector.appendChild(option);
+            });
+            
+            selector.addEventListener('change', (e) => {
+                const parkId = e.target.value;
+                if (parkId) {
+                    loadParkData(parkId);
+                } else {
+                    rides = [];
+                    ridesByLand = {};
+                    renderRides();
+                    document.getElementById('park-info').innerHTML = '';
+                }
+            });
+        }
+
+        async function loadParkData(parkId) {
+            try {
+                const park = parks.find(p => p.id == parkId);
+                selectedPark = park;
+                
+                document.getElementById('park-info').innerHTML = 
+                    `📍 ${park.name}<br>🌍 ${park.country}`;
+                
+                document.getElementById('rides-list').innerHTML = 
+                    '<div style="text-align: center; padding: 2rem; color: #666;">Loading rides...</div>';
+                
+                console.log('Fetching park data for:', park.name);
+                
+                let response;
+                try {
+                    response = await fetch(`${API_BASE}/parks/${parkId}/queue_times.json`);
+                } catch (corsError) {
+                    console.log('Direct fetch failed, trying CORS proxy...');
+                    response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(API_BASE + '/parks/' + parkId + '/queue_times.json')}`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Park data loaded:', data);
+                
+                // Process rides by land
                 rides = [];
+                ridesByLand = {};
                 let rideId = 1;
                 
                 if (data.lands && Array.isArray(data.lands)) {
                     data.lands.forEach(land => {
                         if (land.rides && Array.isArray(land.rides)) {
+                            ridesByLand[land.name] = [];
                             land.rides.forEach(ride => {
-                                rides.push({
+                                const rideObj = {
                                     id: rideId++,
                                     apiId: ride.id,
                                     name: ride.name,
@@ -658,52 +715,55 @@
                                     isOpen: ride.is_open,
                                     waitTime: ride.wait_time,
                                     lastUpdated: ride.last_updated
-                                });
+                                };
+                                rides.push(rideObj);
+                                ridesByLand[land.name].push(rideObj);
                             });
                         }
                     });
                 }
-
-                // Also add rides not in a land
+                
+                // Handle rides not in a land
                 if (data.rides && Array.isArray(data.rides) && data.rides.length > 0) {
+                    ridesByLand['Other Attractions'] = [];
                     data.rides.forEach(ride => {
-                        rides.push({
+                        const rideObj = {
                             id: rideId++,
                             apiId: ride.id,
                             name: ride.name,
-                            landName: null,
+                            landName: 'Other Attractions',
                             isOpen: ride.is_open,
                             waitTime: ride.wait_time,
                             lastUpdated: ride.last_updated
-                        });
+                        };
+                        rides.push(rideObj);
+                        ridesByLand['Other Attractions'].push(rideObj);
                     });
                 }
-
+                
                 console.log('Total rides loaded:', rides.length);
+                console.log('Lands:', Object.keys(ridesByLand));
                 
                 if (rides.length === 0) {
-                    throw new Error('No rides found in API response');
+                    throw new Error('No rides found');
                 }
                 
                 renderRides();
                 applyFilters();
                 
-                // Update park info with last update time
+                // Update last updated time
                 if (rides.length > 0 && rides[0].lastUpdated) {
                     const lastUpdate = new Date(rides[0].lastUpdated);
                     document.getElementById('park-info').innerHTML += 
                         `<br><small>Last updated: ${lastUpdate.toLocaleTimeString()}</small>`;
                 }
             } catch (error) {
-                console.error('Error loading Disneyland data:', error);
-                console.error('Error details:', error.message);
+                console.error('Error loading park data:', error);
                 document.getElementById('rides-list').innerHTML = 
                     `<div style="text-align: center; padding: 2rem; color: #d32f2f;">
                         <strong>⚠️ Error loading rides</strong><br>
                         ${error.message}<br>
-                        <small style="display: block; margin-top: 1rem;">
-                        Check browser console (F12) for more details.
-                        </small>
+                        <small>Try selecting a different park</small>
                     </div>`;
             }
         }
@@ -722,58 +782,18 @@
 
             ridesList.innerHTML = '';
 
-            rides.forEach(ride => {
-                const rideCard = document.createElement('div');
-                rideCard.className = `ride-card ${!ride.isOpen ? 'closed' : ''}`;
-                rideCard.draggable = true;
-                rideCard.dataset.rideId = ride.id;
-                rideCard.dataset.isOpen = ride.isOpen;
-
-                let statusHTML = '';
-                if (ride.isOpen) {
-                    let waitClass = 'medium';
-                    let waitText = `${ride.waitTime} min`;
-                    
-                    if (ride.waitTime === 0) {
-                        waitText = 'Walk-on';
-                        waitClass = 'short';
-                    } else if (ride.waitTime < 20) {
-                        waitClass = 'short';
-                    } else if (ride.waitTime < 45) {
-                        waitClass = 'medium';
-                    } else {
-                        waitClass = 'long';
-                    }
-                    
-                    statusHTML = `
-                        <div class="ride-status">
-                            <span class="status-badge open">Open</span>
-                            <span class="wait-time ${waitClass}">⏱️ ${waitText}</span>
-                        </div>
-                    `;
-                } else {
-                    statusHTML = `
-                        <div class="ride-status">
-                            <span class="status-badge closed">Closed</span>
-                        </div>
-                    `;
-                }
-
-                const landHTML = ride.landName ? `<div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">📍 ${ride.landName}</div>` : '';
-
-                rideCard.innerHTML = `
-                    <div class="ride-info">
-                        <div class="ride-name">${ride.name}</div>
-                        ${landHTML}
-                        ${statusHTML}
-                    </div>
-                    <button class="favorite-btn ${favorites.has(ride.id) ? 'active' : 'inactive'}" 
-                            data-ride-id="${ride.id}">
-                        ${favorites.has(ride.id) ? '⭐' : '☆'}
-                    </button>
-                `;
-
-                ridesList.appendChild(rideCard);
+            // Render rides grouped by land
+            Object.keys(ridesByLand).forEach(landName => {
+                // Create land header
+                const landHeader = document.createElement('div');
+                landHeader.style.cssText = 'font-weight: bold; color: var(--twilight-purple); padding: 0.75rem 0.5rem; margin-top: 1rem; border-bottom: 2px solid var(--golden-peach);';
+                landHeader.textContent = landName;
+                ridesList.appendChild(landHeader);
+                
+                // Render rides in this land
+                ridesByLand[landName].forEach(ride => {
+                    renderRideCard(ride, ridesList);
+                });
             });
 
             // Setup favorite buttons
@@ -783,6 +803,57 @@
                     toggleFavorite(parseInt(btn.dataset.rideId));
                 });
             });
+        }
+
+        function renderRideCard(ride, container) {
+            const rideCard = document.createElement('div');
+            rideCard.className = `ride-card ${!ride.isOpen ? 'closed' : ''}`;
+            rideCard.draggable = true;
+            rideCard.dataset.rideId = ride.id;
+            rideCard.dataset.isOpen = ride.isOpen;
+
+            let statusHTML = '';
+            if (ride.isOpen) {
+                let waitClass = 'medium';
+                let waitText = `${ride.waitTime} min`;
+                
+                if (ride.waitTime === 0) {
+                    waitText = 'Walk-on';
+                    waitClass = 'short';
+                } else if (ride.waitTime < 20) {
+                    waitClass = 'short';
+                } else if (ride.waitTime < 45) {
+                    waitClass = 'medium';
+                } else {
+                    waitClass = 'long';
+                }
+                
+                statusHTML = `
+                    <div class="ride-status">
+                        <span class="status-badge open">Open</span>
+                        <span class="wait-time ${waitClass}">⏱️ ${waitText}</span>
+                    </div>
+                `;
+            } else {
+                statusHTML = `
+                    <div class="ride-status">
+                        <span class="status-badge closed">Closed</span>
+                    </div>
+                `;
+            }
+
+            rideCard.innerHTML = `
+                <div class="ride-info">
+                    <div class="ride-name">${ride.name}</div>
+                    ${statusHTML}
+                </div>
+                <button class="favorite-btn ${favorites.has(ride.id) ? 'active' : 'inactive'}" 
+                        data-ride-id="${ride.id}">
+                    ${favorites.has(ride.id) ? '⭐' : '☆'}
+                </button>
+            `;
+
+            container.appendChild(rideCard);
         }
 
         // ===========================

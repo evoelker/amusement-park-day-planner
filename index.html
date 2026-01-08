@@ -329,6 +329,34 @@
             border-left: 4px solid var(--sunset-coral);
             font-weight: 500;
             color: var(--twilight-purple);
+            position: relative;
+            padding-right: 2.5rem;
+        }
+
+        .scheduled-ride-delete {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .scheduled-ride-delete:hover {
+            background: #b71c1c;
+            transform: scale(1.1);
         }
 
         /* Spinner Section */
@@ -970,9 +998,28 @@
                     waitInfo = ' (Closed)';
                 }
                 
-                rideEl.innerHTML = `${ride.name}${waitInfo}`;
+                rideEl.innerHTML = `
+                    ${ride.name}${waitInfo}
+                    <button class="scheduled-ride-delete" data-time="${timeSlot}" data-index="${index}" title="Remove from schedule">×</button>
+                `;
+                
                 container.appendChild(rideEl);
             });
+
+            // Setup delete buttons
+            container.querySelectorAll('.scheduled-ride-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const timeSlot = btn.dataset.time;
+                    const index = parseInt(btn.dataset.index);
+                    removeRideFromSchedule(timeSlot, index);
+                });
+            });
+        }
+
+        function removeRideFromSchedule(timeSlot, index) {
+            schedule[timeSlot].splice(index, 1);
+            renderSchedule(timeSlot);
         }
 
         // ===========================
